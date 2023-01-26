@@ -29,3 +29,8 @@ Instead of counting exising records, it does rely on knowing how many are curren
 * backup and restore records
 * count of existing records
 * categorize by tf-managed and tf-unmanaged records
+
+## What is the purpose?
+* demonstrate simple REST-API terraform calls
+* alternative to `curl` or `local-exec` commands
+* quick way to adjust isolated Mikrotik configs, ie DNS Records
