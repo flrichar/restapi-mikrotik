@@ -57,10 +57,6 @@ provider "restapi" {
 
 # main.tf
 
-data "external" "record_counter" {
-  program = ["bash", "counter.sh"]
-}
-
 data "restapi_object" "ip-dns-static-records" {
   for_each = toset(var.existing_records)
 
@@ -98,10 +94,6 @@ output "searched_records" {
 output "backup_records" {
   description = "IP DNS Fetched Static Record Data"
   value       = null_resource.backup-records
-}
-
-output "counted_records" {
-  value = tonumber(data.external.record_counter.result.count)
 }
 
 ##output "cname_records" {
