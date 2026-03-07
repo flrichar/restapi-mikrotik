@@ -36,8 +36,13 @@ terraform {
   required_providers {
     restapi = {
       source  = "Mastercard/restapi"
-      version = ">= 1.18.0"
+      version = "3.0.0"
+      // refactor of provider 2026_0126
     }
+  }
+
+  backend "pg" {
+    schema_name = "restapi-mikrotik"
   }
 }
 
@@ -52,6 +57,10 @@ provider "restapi" {
 
 # main.tf
 
+data "external" "record_counter" {
+  program = ["bash", "counter.sh"]
+}
+
 data "restapi_object" "ip-dns-static-records" {
   for_each = toset(var.existing_records)
 
@@ -61,7 +70,41 @@ data "restapi_object" "ip-dns-static-records" {
   id_attribute = "name"
 }
 
-output "static_records" {
-  description = "IP DNS Static Record Data"
+##data "restapi_object" "ip-dns-static-enabled" {
+##  count        = tonumber(data.external.record_counter.result.count)
+##  path         = "/rest/ip/dns/static"
+##  search_key   = ".id"
+##  search_value = "*"
+##  id_attribute = "name"
+##}
+
+resource "null_resource" "backup-records" {
+  triggers = {
+    always_run = timestamp()
+  }
+  provisioner "local-exec" {
+    command = "curl -k -u ${var.username}:${var.password} -X POST https://hexs760.gxize.local/rest/ip/dns/static/print > backup-records-$(date -I).json"
+    quiet   = true
+  }
+}
+
+## count = length(data.restapi_object.ip-dns-static-print)
+
+output "searched_records" {
+  description = "IP DNS Searched Static Record Data"
   value       = data.restapi_object.ip-dns-static-records[*]
 }
+
+output "backup_records" {
+  description = "IP DNS Fetched Static Record Data"
+  value       = null_resource.backup-records
+}
+
+output "counted_records" {
+  value = tonumber(data.external.record_counter.result.count)
+}
+
+##output "cname_records" {
+##  value = data.restapi_object.ip-dns-static-enabled[*]
+##}
+

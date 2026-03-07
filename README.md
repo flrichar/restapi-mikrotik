@@ -29,3 +29,9 @@ Instead of counting exising records, it does rely on knowing how many are curren
 * backup and restore records
 * count of existing records
 * categorize by tf-managed and tf-unmanaged records
+
+## MT & Duplicates
+Mikrotik's REST API allows dupes for record-names, I added an entry by-name, need to convert the list to by-id and remove dupes.
+
+https://www.slingacademy.com/article/terraform-ways-to-remove-duplicates-from-a-list/
+
