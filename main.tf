@@ -66,14 +66,6 @@ data "restapi_object" "ip-dns-static-records" {
   id_attribute = "name"
 }
 
-##data "restapi_object" "ip-dns-static-enabled" {
-##  count        = tonumber(data.external.record_counter.result.count)
-##  path         = "/rest/ip/dns/static"
-##  search_key   = ".id"
-##  search_value = "*"
-##  id_attribute = "name"
-##}
-
 resource "null_resource" "backup-records" {
   triggers = {
     always_run = timestamp()
@@ -83,8 +75,6 @@ resource "null_resource" "backup-records" {
     quiet   = true
   }
 }
-
-## count = length(data.restapi_object.ip-dns-static-print)
 
 output "searched_records" {
   description = "IP DNS Searched Static Record Data"
