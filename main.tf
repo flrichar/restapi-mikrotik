@@ -57,7 +57,8 @@ provider "restapi" {
 
 # main.tf
 
-data "restapi_object" "ip-dns-static-records" {
+// check for existing records
+data "restapi_object" "ipdns_existingrecords" {
   for_each = toset(var.existing_records)
 
   path         = "/rest/ip/dns/static"
@@ -66,27 +67,38 @@ data "restapi_object" "ip-dns-static-records" {
   id_attribute = "name"
 }
 
-resource "null_resource" "backup-records" {
-  triggers = {
-    always_run = timestamp()
-  }
-  provisioner "local-exec" {
-    command = "curl -k -u ${var.username}:${var.password} -X POST https://hexs760.gxize.local/rest/ip/dns/static/print > backup-records-$(date -I).json"
-    quiet   = true
+
+##// search one record at a time
+##data "restapi_object" "ipdns_staticrecord" {
+##
+##  path         = "/rest/ip/dns/static"
+##  search_key   = "dynamic"
+##  search_value = "false"
+##  id_attribute = ".id"
+##}
+
+
+// read out static records
+data "http" "ipdns_staticrecords" {
+  url    = "${var.api_uri}/rest/ip/dns/static/print"
+  method = "POST"
+
+  request_headers = {
+    Accept        = "application/json"
+    Authorization = "Basic ${base64encode("${var.username}:${var.password}")}"
   }
 }
+
+resource "local_file" "all_records" {
+
+  content  = data.http.ipdns_staticrecords.response_body
+  filename = "${path.module}/output/ipdns_staticrecords_${formatdate("YYYY-MM-DD", plantimestamp())}.json"
+}
+
+# outputs.tf
 
 output "searched_records" {
   description = "IP DNS Searched Static Record Data"
-  value       = data.restapi_object.ip-dns-static-records[*]
+  value       = data.http.ipdns_staticrecords.response_body
 }
-
-output "backup_records" {
-  description = "IP DNS Fetched Static Record Data"
-  value       = null_resource.backup-records
-}
-
-##output "cname_records" {
-##  value = data.restapi_object.ip-dns-static-enabled[*]
-##}
 
