@@ -2,13 +2,15 @@
 Manage Mikrotik routers and devices using the Mastercard rest-api terraform provider.
 
 ## Description
-The purpose of this terraform plan is to automate DNS settings on Mikrotik devices.  There are other Mikrotik providers [like this one from DDelano](https://github.com/ddelnano/terraform-provider-mikrotik), and it worked well, however it turns out Routeros has a basic REST API manageable via a normal curl-type operations.
+The purpose of this plan is to automate DNS settings on Mikrotik devices.  There are other Mikrotik providers [like this one from DDelano](https://github.com/ddelnano/terraform-provider-mikrotik), and it worked well, however it turns out Routeros has a basic REST API manageable via a normal curl-type operations.
 
-Mastercard has their own [terraform provider for standard restapi](https://github.com/Mastercard/terraform-provider-restapi) which in simplest terms is what was needed above, emulating curl with terraform.  It is stable and well tested.
+Mastercard has their own [terraform provider for standard restapi](https://github.com/Mastercard/terraform-provider-restapi) which in simplest terms is what was needed above, emulating curl with terraform.  It is stable and well tested. Additionally, it has recently been rewritten for simplicity.
 
 This evloved from a conversation about managing kube-vip dns records, and [this gist](https://gist.github.com/flrichar/9bc14ddfb517ab79cc02e3b6c19a36dc), where the question to answer was: _Can terraform operate like curl on a standard rest-api, without using a tool like `local-exec`?_
 
 Note this is not limited to DNS records, it can handle any Mikrotik configuration operation, this project is focused on DNS records as a learning and evaluation example. 
+
+With the new provider, I updated the counting, replacing the old `local_exec` with the `http` provider, early testing shows the latter works better.  
 
 ### General Benefits
 * still very much a work in progress
@@ -27,10 +29,5 @@ Instead of counting exising records, it does rely on knowing how many are curren
 ## TODO
 * CRUD operations with each record resource
 * backup and restore records
-* count of existing records
+* count of existing records - Done!
 * categorize by tf-managed and tf-unmanaged records
-
-## What is the purpose?
-* demonstrate simple REST-API terraform calls
-* alternative to `curl` or `local-exec` commands
-* quick way to adjust isolated Mikrotik configs, ie DNS Records

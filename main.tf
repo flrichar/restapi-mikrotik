@@ -36,8 +36,13 @@ terraform {
   required_providers {
     restapi = {
       source  = "Mastercard/restapi"
-      version = ">= 1.18.0"
+      version = "3.0.0"
+      // newest provider 2026_0309
     }
+  }
+
+  backend "pg" {
+    schema_name = "restapi-mikrotik"
   }
 }
 
@@ -52,7 +57,8 @@ provider "restapi" {
 
 # main.tf
 
-data "restapi_object" "ip-dns-static-records" {
+// check for existing records
+data "restapi_object" "ipdns_existingrecords" {
   for_each = toset(var.existing_records)
 
   path         = "/rest/ip/dns/static"
@@ -61,7 +67,39 @@ data "restapi_object" "ip-dns-static-records" {
   id_attribute = "name"
 }
 
-output "static_records" {
-  description = "IP DNS Static Record Data"
-  value       = data.restapi_object.ip-dns-static-records[*]
+
+##// search one record at a time
+##data "restapi_object" "ipdns_staticrecord" {
+##
+##  path         = "/rest/ip/dns/static"
+##  search_key   = "dynamic"
+##  search_value = "false"
+##  id_attribute = ".id"
+##}
+
+
+// read out static records
+data "http" "ipdns_staticrecords" {
+  url    = "${var.api_uri}/rest/ip/dns/static/print"
+  method = "POST"
+
+  request_headers = {
+    Accept        = "application/json"
+    Authorization = "Basic ${base64encode("${var.username}:${var.password}")}"
+  }
 }
+
+resource "local_file" "all_records" {
+
+  content         = data.http.ipdns_staticrecords.response_body
+  filename        = "${path.module}/output/ipdns_staticrecords_${formatdate("YYYY-MM-DD", plantimestamp())}.json"
+  file_permission = "0644"
+}
+
+# outputs.tf
+
+output "searched_records" {
+  description = "IP DNS Searched Static Record Data"
+  value       = data.http.ipdns_staticrecords.response_body
+}
+
