@@ -37,7 +37,7 @@ terraform {
     restapi = {
       source  = "Mastercard/restapi"
       version = "3.0.0"
-      // refactor of provider 2026_0126
+      // newest provider 2026_0309
     }
   }
 
@@ -91,8 +91,9 @@ data "http" "ipdns_staticrecords" {
 
 resource "local_file" "all_records" {
 
-  content  = data.http.ipdns_staticrecords.response_body
-  filename = "${path.module}/output/ipdns_staticrecords_${formatdate("YYYY-MM-DD", plantimestamp())}.json"
+  content         = data.http.ipdns_staticrecords.response_body
+  filename        = "${path.module}/output/ipdns_staticrecords_${formatdate("YYYY-MM-DD", plantimestamp())}.json"
+  file_permission = "0644"
 }
 
 # outputs.tf

@@ -4,5 +4,4 @@ terraform.tfstate*
 terraform.tfvars
 tfvars.tf
 .NOTES
-old
 output
